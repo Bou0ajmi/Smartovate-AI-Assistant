@@ -1,4 +1,4 @@
-# Smartevate AI Agent
+# Smartovate AI Agent
 
 A conversational AI agent built with **LangChain** and **AWS Bedrock**, combining Retrieval-Augmented Generation (RAG) over a private knowledge base with live web search, persistent multi-turn memory, and automatic conversation summarization. Runs locally via Streamlit for testing and deploys to AWS as a serverless container (Lambda + API Gateway).
 
@@ -13,7 +13,7 @@ This agent can:
 - **Summarize** long conversations automatically to stay within context limits
 - Run identically in a local Streamlit test UI and as a production Lambda function
 
-Built as part of an internship project at **Smartevate**.
+Built as part of an internship project at **Smartovate**.
 
 ---
 
@@ -227,14 +227,14 @@ The agent is packaged as a Docker container and deployed to Lambda behind API Ga
 
 1. **Build the image**
    ```bash
-   docker build -t smartevate-agent .
+   docker build -t Smartovate-agent .
    ```
 
 2. **Push to Amazon ECR**
    ```bash
    aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
-   docker tag smartevate-agent:latest <account-id>.dkr.ecr.<region>.amazonaws.com/smartevate-agent:latest
-   docker push <account-id>.dkr.ecr.<region>.amazonaws.com/smartevate-agent:latest
+   docker tag Smartovate-agent:latest <account-id>.dkr.ecr.<region>.amazonaws.com/Smartovate-agent:latest
+   docker push <account-id>.dkr.ecr.<region>.amazonaws.com/Smartovate-agent:latest
    ```
 
 3. **Create/update the Lambda function** from the ECR image, with `handler.py` as the entry point.
@@ -258,4 +258,4 @@ The agent is packaged as a Docker container and deployed to Lambda behind API Ga
 
 ## Author
 
-Built by **Bouthayna Ajmi** during an internship at **Smartevate**.
+Built by **Bouthayna Ajmi** during an internship at **Smartovate**.
