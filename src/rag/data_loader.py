@@ -15,7 +15,3 @@ def load_pdfs(folder_path: str) -> List[Document]:
     )
 
     return loader.load()
-
-##test
-# pdfs=load_pdfs("files")
-# print(pdfs)

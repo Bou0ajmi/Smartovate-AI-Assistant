@@ -1,64 +1,67 @@
 from langchain_community.vectorstores import FAISS
-from typing import List, Any
+from typing import List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import numpy as np
 from langchain_core.documents import Document
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())  # library code shouldn't force its own handler
 
 class VectorStore:
-    def __init__(self, embedding_model,chunk_size: int = 1200, chunk_overlap: int = 200):
+    def __init__(self, embedding_model, chunk_size: int = 1200, chunk_overlap: int = 200):
         self.embedding_model = embedding_model
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.vector_store = None
 
-    def chunk_documents(self, documents):
-        splitter= RecursiveCharacterTextSplitter(
-            chunk_size=self.chunk_size, 
+    def chunk_documents(self, documents: List[Document]) -> List[Document]:
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
             length_function=len,
             separators=["\n\n", "\n· ", "\n", ". ", " ", ""]
-            )
-        chunks=splitter.split_documents(documents)
-        print(f"Total chunks created: {len(chunks)}")
+        )
+        chunks = splitter.split_documents(documents)
+        logger.info("Total chunks created: %d", len(chunks))
         return chunks
-    
 
-    def create_vector_store(self, documents: List[Document])->None:
-        print(f"[INFO] Creating vector store for {len(documents)} documents...")
-        chunks=self.chunk_documents(documents)
+    def create_vector_store(self, documents: List[Document]) -> None:
+        logger.info("Creating vector store for %d documents...", len(documents))
+        chunks = self.chunk_documents(documents)
         self.vector_store = FAISS.from_documents(chunks, self.embedding_model)
-        print(f"[INFO] Vector store created with {self.vector_store.index.ntotal} vectors.")
+        logger.info("Vector store created with %d vectors.", self.vector_store.index.ntotal)
 
-    def save_vector_store(self, file_path: str):
+    def save_vector_store(self, file_path: str) -> None:
         if self.vector_store is None:
             raise ValueError("Vector store has not been created yet.")
         self.vector_store.save_local(file_path)
-        print(f"[INFO] Vector store saved to {file_path}")
+        logger.info("Vector store saved to %s", file_path)
 
-    def load_vector_store(self, file_path: str):
+    def load_vector_store(self, file_path: str) -> None:
         try:
-            self.vector_store = FAISS.load_local(file_path,
-                                                self.embedding_model,
-                                                allow_dangerous_deserialization=True
-                                                )
-            print(f"[INFO] Vector store loaded from {file_path} with {self.vector_store.index.ntotal} vectors.")
-        except Exception as e:
-            print("problem loading the vector store\n")
-            print(e)
-    
-    def add_documents(self, new_documents: List[Document]):
+            self.vector_store = FAISS.load_local(
+                file_path,
+                self.embedding_model,
+                allow_dangerous_deserialization=True
+            )
+            logger.info(
+                "Vector store loaded from %s with %d vectors.",
+                file_path, self.vector_store.index.ntotal
+            )
+        except Exception:
+            logger.exception("Problem loading the vector store from %s", file_path)
+            raise
+
+    def add_documents(self, new_documents: List[Document]) -> None:
         if self.vector_store is None:
             raise ValueError("Vector store has not been created yet.")
         new_chunks = self.chunk_documents(new_documents)
-        print(f"[INFO] Adding {len(new_chunks)} new chunks to the vector store...")
+        logger.info("Adding %d new chunks to the vector store...", len(new_chunks))
         self.vector_store.add_documents(new_chunks)
-        print(f"[INFO] Vector store now contains {self.vector_store.index.ntotal} vectors.")
-    
-    def retrieve_documents(self, query: str, top_k: int = 5) -> str:
+        logger.info("Vector store now contains %d vectors.", self.vector_store.index.ntotal)
+
+    def retrieve_documents(self, query: str, top_k: int = 5) -> List[Document]:
         if self.vector_store is None:
             raise ValueError("Vector store has not been created yet.")
-        print(f"[INFO] Retrieving top {top_k} similar documents for the query: '{query}'")
-        results = self.vector_store.similarity_search(query, k=top_k)
-        return results
-    
-    
+        logger.info("Retrieving top %d similar documents for the query: '%s'", top_k, query)
+        return self.vector_store.similarity_search(query, k=top_k)
