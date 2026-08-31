@@ -1,3 +1,6 @@
+
+
+
 # Smartovate AI Agent
 
 A conversational AI agent built with **LangChain** and **AWS Bedrock**, combining Retrieval-Augmented Generation (RAG) over a private knowledge base with live web search, persistent multi-turn memory, and automatic conversation summarization. Runs locally via Streamlit for testing and deploys to AWS as a serverless container (Lambda + API Gateway).
